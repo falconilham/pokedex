@@ -1,24 +1,13 @@
 import {createSlice} from '@reduxjs/toolkit';
 
-import {dispatch} from '../store';
-
-// ----------------------------------------------------------------------
-
-const initialState = {
-  pokemon: [],
-};
+const initialPokemon = [];
 
 const slice = createSlice({
   name: 'pokemon-data',
-  initialState,
+  initialState: initialPokemon,
   reducers: {
-    addData: (state, action) => {
-      const data = action.payload;
-      return {
-        ...state,
-        pokemon: [...state.pokemon, data],
-      };
-    },
+    addData: (state, action) => [...state, ...action.payload],
+    changeData: (_, action) => action.payload,
     removeData: (state, action) => {
       const id = action.payload;
       return {
@@ -29,11 +18,6 @@ const slice = createSlice({
   },
 });
 
-export function addData(payload) {
-  dispatch(slice.actions.addData(payload));
-}
+export const {addData, removeData, changeData} = slice.actions;
 
-export function removeData(payload) {
-  dispatch(slice.actions.removeData(payload));
-}
 export default slice.reducer;
