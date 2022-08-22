@@ -1,20 +1,14 @@
 import React, {useEffect, useState} from 'react';
-import {
-  View,
-  FlatList,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-} from 'react-native';
+import {View, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
 import {Text, ActivityIndicator, Modal, TextInput} from 'react-native-paper';
 import {useSelector, useDispatch} from 'react-redux';
-import {Card, Filter} from '../component';
+import {Card, Filter, Preview} from '../component';
 import {
   getAllPokemon,
   getAlltype,
   getAllPokemonByType,
 } from '../helper/request';
-import {getColorTypePokemon} from '../helper/typePokemon';
+import {getColorTypePokemon} from '../helper';
 import {addData, changeData} from '../redux/slices/pokemon';
 
 function Home() {
@@ -25,20 +19,29 @@ function Home() {
   const [selectedType, setSelectedType] = useState('');
   const [visibleFilter, setVisibleFilter] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [preview, setPreview] = useState(null);
+  const [selectedPokemon, setSelectedPokemon] = useState(null);
   const [listType, setListType] = useState([]);
-  const openPreview = myPokemon.find(({id}) => id === preview);
   const dispatch = useDispatch();
+
   const getDataPokemon = async () => {
+    setLoading(true);
+    const data = await getAllPokemon();
+    dispatch(changeData(data));
+    setLoading(false);
+  };
+
+  const getMorePokemon = async () => {
     setLoading(true);
     const data = await getAllPokemon(myPokemon.length);
     dispatch(addData(data));
     setLoading(false);
   };
+
   const getType = async () => {
     const data = await getAlltype();
     setListType(data.results);
   };
+
   useEffect(() => {
     getDataPokemon();
     getType();
@@ -46,20 +49,26 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    if (selectedType) {
-      getAllPokemonByType(selectedType).then(data =>
-        dispatch(changeData(data)),
-      );
+    if (selectedType !== null) {
+      setLoading(true);
+      getAllPokemonByType(selectedType)
+        .then(data => {
+          dispatch(changeData(data));
+          setLoading(false);
+        })
+        .catch(err => console.log(err));
+    } else {
+      getDataPokemon();
     }
-  }),
-    [selectedType, getAllPokemonByType];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedType]);
 
   const usedData =
     searchPokemon.length > 0
       ? myPokemon.filter(({name}) => name.includes(searchPokemon.toLowerCase()))
       : myPokemon;
   return (
-    <View>
+    <View style={styles.container}>
       <View style={styles.header}>
         <TextInput
           label={'Search Pokemon'}
@@ -89,11 +98,14 @@ function Home() {
         data={usedData}
         columnWrapperStyle={styles.wrapperContent}
         numColumns={2}
-        keyExtractor={item => item.id}
-        renderItem={({item}) => (
-          <View style={styles.content}>
-            <Card image={item.image} id={item.id} setPreview={setPreview} />
-            <Text variant="titleMedium" style={styles.text}>
+        keyExtractor={(_, key) => key}
+        renderItem={({item}, key) => (
+          <TouchableOpacity
+            style={styles.content}
+            key={key}
+            onPress={() => setSelectedPokemon(item)}>
+            <Card item={item} setSelectedPokemon={setSelectedPokemon} />
+            <Text numberOfLines={1} variant="titleMedium" style={styles.text}>
               {item.name}
             </Text>
             <View style={styles.containerType}>
@@ -110,19 +122,15 @@ function Home() {
                 </View>
               ))}
             </View>
-          </View>
+          </TouchableOpacity>
         )}
-        onEndReached={getDataPokemon}
+        onEndReached={!selectedType && getMorePokemon}
         onEndReachedThreshold={0.5}
       />
-      <Modal visible={Boolean(openPreview)} onDismiss={() => setPreview(null)}>
-        <View style={styles.wrapperImageModal}>
-          <View style={styles.closeButton}>
-            <Text onPress={() => setPreview(null)}>X</Text>
-          </View>
-          <Image source={{uri: openPreview?.image}} style={styles.image} />
-        </View>
-      </Modal>
+      <Preview
+        selectedPokemon={selectedPokemon}
+        setSelectedPokemon={setSelectedPokemon}
+      />
       <Filter
         visible={visibleFilter}
         listRadio={listType}
@@ -143,6 +151,9 @@ function Home() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   header: {
     flexDirection: 'row',
     padding: 10,
@@ -150,6 +161,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     width: '100%',
     flexWrap: 'wrap',
+    // position: 'absolute',
+    backgroundColor: 'white',
+    zIndex: 1,
   },
   textType: {
     color: 'white',
@@ -176,24 +190,6 @@ const styles = StyleSheet.create({
   modalText: {
     color: 'white',
   },
-  wrapperImageModal: {
-    alignItems: 'center',
-    backgroundColor: 'white',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    height: '80%',
-    width: '80%',
-  },
-  image: {
-    width: '80%',
-    height: '80%',
-  },
-  closeButton: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    padding: 20,
-  },
   textInput: {
     backgroundColor: '#fff',
     width: '80%',
@@ -215,6 +211,30 @@ const styles = StyleSheet.create({
   },
   textFilter: {
     textAlign: 'center',
+  },
+  bottomCard: {
+    flexDirection: 'column',
+    marginTop: 10,
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+  },
+  bottomCardTextPreview: {
+    // paddingVertical: 1,
+    alignContent: 'flex-start',
+    // backgroundColor: 'green',
+    width: 'auto',
+    marginBottom: 20,
+    border: 'solid 1px #e0e0e0',
+  },
+  bottomCardTextDetail: {
+    // paddingVertical: 1,
+    alignContent: 'flex-start',
+    backgroundColor: '#A040A0',
+    color: 'white',
+    width: 'auto',
+  },
+  textButton: {
+    color: 'white',
   },
 });
 

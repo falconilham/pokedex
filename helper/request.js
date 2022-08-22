@@ -6,14 +6,13 @@ async function getDetailPokemon(name) {
 }
 
 async function getAllPokemon(offset = 0) {
-  const response = await axios.get(`/pokemon/?offset=${offset}&limit=20`);
-  const getAllDetailPokemon = Promise.all(
-    response.data.results.map(async ({name}) => {
+  const response = await axios.get(`/pokemon/?offset=${offset}&limit=10`);
+  const getAllDetailPokemon = await Promise.all(
+    response?.data?.results?.map(async ({name}) => {
       const result = await getDetailPokemon(name);
       return {
         ...result,
         image:
-          result &&
           result &&
           result.sprites &&
           result.sprites.other &&
@@ -21,7 +20,9 @@ async function getAllPokemon(offset = 0) {
           result.sprites.other.home.front_default,
       };
     }),
-  ).then(data => data);
+  )
+    .then(data => data)
+    .catch(err => console.log(err));
   return getAllDetailPokemon;
 }
 
@@ -30,15 +31,19 @@ async function getAlltype() {
   return response.data;
 }
 
+async function getEvolution(id) {
+  const response = await axios.get(`/evolution-chain/${id}`);
+  return response.data;
+}
+
 async function getAllPokemonByType(type) {
   const response = await axios.get(`/type/${type}/`);
-  const getAllDetailPokemon = Promise.all(
-    response.data.pokemon.map(async ({pokemon}) => {
+  const getAllDetailPokemon = await Promise.all(
+    response?.data?.pokemon?.map(async ({pokemon}) => {
       const result = await getDetailPokemon(pokemon.name);
       return {
         ...result,
         image:
-          result &&
           result &&
           result.sprites &&
           result.sprites.other &&
@@ -46,8 +51,10 @@ async function getAllPokemonByType(type) {
           result.sprites.other.home.front_default,
       };
     }),
-  ).then(data => data);
+  )
+    .then(data => data)
+    .catch(err => console.log(err));
   return getAllDetailPokemon;
 }
 
-export {getAllPokemon, getAlltype, getAllPokemonByType};
+export {getAllPokemon, getAlltype, getAllPokemonByType, getEvolution};

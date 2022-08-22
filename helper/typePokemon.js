@@ -22,4 +22,4 @@ function getColorTypePokemon(type) {
   return typeColorMap[type];
 }
 
-export {getColorTypePokemon};
+export default getColorTypePokemon;

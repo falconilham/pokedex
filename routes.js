@@ -7,12 +7,14 @@ const Stack = createNativeStackNavigator();
 
 const listRoutes = [
   {
-    name: 'List Pokemon',
+    name: 'Home',
     component: Home,
+    options: {title: 'List Pokemon'},
   },
   {
-    name: 'Pokemon Detail',
+    name: 'Detail',
     component: Pokemon,
+    options: {title: 'Pokemon Detail'},
   },
 ];
 
@@ -20,8 +22,13 @@ function Routes() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="List Pokemon">
-        {listRoutes.map(({name, component}, key) => (
-          <Stack.Screen key={key} name={name} component={component} />
+        {listRoutes.map(({name, component, options}, key) => (
+          <Stack.Screen
+            key={key}
+            name={name}
+            component={component}
+            options={options}
+          />
         ))}
       </Stack.Navigator>
     </NavigationContainer>

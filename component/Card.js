@@ -1,11 +1,12 @@
 import React from 'react';
 import {Card as CardComponent} from 'react-native-paper';
 
-function Card({image, id, setPreview}) {
+function Card({item, setSelectedPokemon}) {
   return (
-    <CardComponent onLongPress={() => setPreview(id)}>
-      <CardComponent.Cover source={{uri: image}} />
-    </CardComponent>
+    <CardComponent.Cover
+      source={{uri: item.image}}
+      onPress={() => setSelectedPokemon(item)}
+    />
   );
 }
 

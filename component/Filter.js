@@ -4,7 +4,7 @@ import {RadioButton, Modal, Portal} from 'react-native-paper';
 
 function FilterComponent(props) {
   const {visible, selectedType, setSelectedType, listRadio, setVisible} = props;
-  console.log({listRadio});
+  // console.log({listRadio});
   return (
     <Portal>
       <Modal
