@@ -4,7 +4,7 @@ Pokedex App for SIRCLO Test Assignment
 
 Tested on IOS
 
-# dDepedencies
+# Depedencies
 ✅ React Native
 ✅ Redux
 ✅ React Redux
